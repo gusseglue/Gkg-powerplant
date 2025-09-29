@@ -2,6 +2,7 @@ local Config = lib.require('shared.config')
 local Utils = lib.require('shared.utils')
 
 local networkState = nil
+local canControl = false
 local laptopEntity = nil
 local generatorPoints = {}
 local laptopPoint = nil
@@ -9,6 +10,19 @@ local uiOpen = false
 local blackoutZones = {}
 local blackoutActive = false
 local trafficOverride = false
+
+local function refreshNetworkState()
+    local response = lib.callback.await('gkg-powerplant:getNetworkState', false)
+    if response and response.state then
+        networkState = response.state
+        canControl = response.canControl or false
+        return networkState
+    end
+
+    networkState = nil
+    canControl = false
+    return nil
+end
 
 local function buildBlackoutZones()
     blackoutZones = {}
@@ -126,14 +140,23 @@ local function buildGeneratorMenu(id)
     }
 
     if generator.status == 'offline' then
-        options[#options + 1] = {
-            title = 'Repair generator',
-            description = generator.reason == 'fuel' and 'Refuel and restart the generator.' or 'Bring the generator back online.',
-            icon = 'fa-solid fa-screwdriver-wrench',
-            onSelect = function()
-                TriggerServerEvent('gkg-powerplant:repairGenerator', generator.id)
-            end,
-        }
+        if canControl then
+            options[#options + 1] = {
+                title = 'Repair generator',
+                description = generator.reason == 'fuel' and 'Refuel and restart the generator.' or 'Bring the generator back online.',
+                icon = 'fa-solid fa-screwdriver-wrench',
+                onSelect = function()
+                    TriggerServerEvent('gkg-powerplant:repairGenerator', generator.id)
+                end,
+            }
+        else
+            options[#options + 1] = {
+                title = 'Offline',
+                description = 'Kontrolhandlinger kræver autoriseret job.',
+                icon = 'fa-solid fa-lock',
+                readOnly = true,
+            }
+        end
     end
 
     lib.registerContext({
@@ -158,10 +181,10 @@ local function openLaptop()
     lib.hideTextUI()
 
     if not networkState then
-        networkState = lib.callback.await('gkg-powerplant:getNetworkState', false)
+        refreshNetworkState()
     end
 
-    if not networkState then
+    if not networkState or not networkState.city then
         lib.notify({
             type = 'error',
             title = 'Power Grid',
@@ -242,7 +265,7 @@ local function createGeneratorPoints()
             nearby = function(self)
                 if self.currentDistance <= 2.5 and IsControlJustReleased(0, 38) then
                     if not networkState then
-                        networkState = lib.callback.await('gkg-powerplant:getNetworkState', false)
+                        refreshNetworkState()
                     end
                     if networkState then
                         buildGeneratorMenu(self.generatorId)
@@ -321,8 +344,7 @@ RegisterNetEvent('gkg-powerplant:playRepairAnimation', function()
 end)
 
 CreateThread(function()
-    networkState = lib.callback.await('gkg-powerplant:getNetworkState', false)
-    if networkState then
+    if refreshNetworkState() then
         for zoneName, zoneData in pairs(blackoutZones) do
             zoneData.active = networkState.zones and networkState.zones[zoneName] and networkState.zones[zoneName].blackout or false
         end

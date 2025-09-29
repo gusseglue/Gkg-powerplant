@@ -11,10 +11,17 @@ shared_scripts {
 }
 
 client_scripts {
-    'client/main.lua'
+    'client/main.lua',
+    'client/tablet.lua'
 }
 
 server_scripts {
     'server/main.lua'
 }
+
+files {
+    'ui/tablet/**'
+}
+
+ui_page 'ui/tablet/index.html'
 

@@ -14,6 +14,7 @@ A fully dynamic power management system for Qbox that simulates generators, zone
 ## Requirements
 - [Qbox](https://github.com/Qbox-project/qbox)
 - [ox_lib](https://github.com/overextended/ox_lib)
+- [lb-tablet](https://github.com/lbphone/lb-tablet-app-templates/) *(optional, for the tablet dashboard)*
 
 ## Installation
 1. Place the repository inside your server resources directory (e.g. `resources/[qbox]/gkg-powerplant`).
@@ -30,6 +31,7 @@ All tunable values live in [`shared/config.lua`](shared/config.lua). The default
 - `FuelUsage` / `FuelTickMinutes` – Fuel consumed every tick and the tick interval.
 - `RandomDisable`, `DisableInterval`, `DisableVariance` – Control random generator outages.
 - `RepairRewardJobs`, `RepairRewardCash`, `RepairCooldown` – Jobs authorised to repair, cash payout and cooldown between repairs.
+- `EnableTabletApp` – Toggle automatic LB Tablet dashboard registration.
 
 ### Zones
 Each zone can define:
@@ -50,6 +52,9 @@ Each generator entry contains:
 ### Laptop placement
 The laptop entity spawned on resource start uses `LaptopEntityCoords`, `LaptopHeading` and `LaptopModel`. Adjust to reposition the interaction point.
 
+### LB Tablet integration
+Set `EnableTabletApp` to `true` (default) to automatically register the bundled LB Tablet dashboard once the `lb-tablet` resource is running. The app installs for every player, showing live city, zone and generator data while exposing control buttons only when the player's job is in `Config.RepairRewardJobs`. If your server does not run LB Tablet, simply set `EnableTabletApp = false` to skip the registration entirely.
+
 ## Gameplay loop
 1. **Demand generation** – Player count drives base load, distributed to zones by their multipliers.
 2. **Generator upkeep** – Fuel is automatically drained every tick. When empty or randomly disabled, the generator goes offline.
@@ -59,6 +64,7 @@ The laptop entity spawned on resource start uses `LaptopEntityCoords`, `LaptopHe
 ## Extending the system
 - Persist generator state by adding your own database writes inside the server logic (`server/main.lua`).
 - Hook into the `broadcastState` function to integrate alerts with dispatch or logging systems.
+- Use the `gkg-powerplant:getNetworkState` callback to retrieve both the cached grid snapshot (`state`) and a `canControl` flag for the requesting player.
 - Expand the client UI by replacing the ox_lib context menus with custom NUI if desired.
 
 ## License

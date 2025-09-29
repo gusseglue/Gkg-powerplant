@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>GKG Power Grid Tablet</title>
+        <link rel="stylesheet" href="styles.css" />
+        <link rel="stylesheet" href="colors.css" />
+        <link rel="stylesheet" href="frame.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div id="tablet-wrapper">
+            <div class="app" id="content">
+                <div class="app-wrapper">
+                    <header class="header">
+                        <div class="header-copy">
+                            <div class="title">City Power Network</div>
+                            <div class="subtitle" id="city-overview">Initialising…</div>
+                        </div>
+                        <div class="header-actions">
+                            <span class="badge" id="control-badge">Loading</span>
+                            <button class="refresh" id="refresh">
+                                <span class="refresh-icon">⟳</span>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="status" id="status-message">Waiting for live data…</div>
+
+                    <section class="panel" id="city-panel">
+                        <div class="panel-title">City Overview</div>
+                        <div class="metrics" id="city-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Load</div>
+                                <div class="metric-value" id="metric-load">-</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Capacity</div>
+                                <div class="metric-value" id="metric-capacity">-</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Utilisation</div>
+                                <div class="metric-value" id="metric-utilisation">-</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Online Generators</div>
+                                <div class="metric-value" id="metric-generators">-</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Players Connected</div>
+                                <div class="metric-value" id="metric-players">-</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel" id="zones-panel">
+                        <div class="panel-title">Zones</div>
+                        <div class="zones" id="zones-container"></div>
+                    </section>
+
+                    <section class="panel" id="generators-panel">
+                        <div class="panel-title">Generators</div>
+                        <div class="table" id="generators-table">
+                            <div class="table-header">
+                                <span>Name</span>
+                                <span>Status</span>
+                                <span>Fuel</span>
+                                <span class="actions-col">Actions</span>
+                            </div>
+                            <div class="table-body" id="generators-body"></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <script src="dev.js"></script>
+        <script>
+            window.addEventListener('message', (event) => {
+                if (event.data === 'componentsLoaded') {
+                    const script = document.createElement('script');
+                    script.src = 'script.js';
+                    document.body.appendChild(script);
+                }
+            });
+
+            if (!globalThis.GetParentResourceName) document.body.style.visibility = 'visible';
+        </script>
+    </body>
+</html>
