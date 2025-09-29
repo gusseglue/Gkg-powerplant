@@ -40,6 +40,7 @@ local function initialiseZones()
             recoveryMultiplier = data.recoveryMultiplier or 1.0,
             currentLoad = 0,
             deficit = 0,
+            blackout = false,
             generators = {},
         }
     end
@@ -105,10 +106,20 @@ local function buildNetworkSnapshot()
         zone.currentLoad = Utils.round(cappedLoad, 2)
         zone.deficit = Utils.round(math.max(effectiveLoad - (zone.capacity or 0), 0), 2)
         totalLoad += zone.currentLoad
+        zone.blackout = zone.deficit > 0
     end
 
     local capacity = Config.CityCapacity or 0
     local utilisation = capacity > 0 and Utils.round((totalLoad / capacity) * 100, 2) or 0
+    local cityOverloaded = capacity > 0 and totalLoad > capacity
+
+    if cityOverloaded then
+        for _, zone in pairs(Zones) do
+            if zone.capacity > 0 and zone.currentLoad >= zone.capacity then
+                zone.blackout = true
+            end
+        end
+    end
 
     CachedState = {
         city = {
@@ -118,6 +129,7 @@ local function buildNetworkSnapshot()
             players = playerCount,
             onlineGenerators = onlineGenerators,
             utilisation = utilisation,
+            blackout = cityOverloaded,
         },
         zones = {},
         generators = {},
@@ -131,6 +143,7 @@ local function buildNetworkSnapshot()
             deficit = zone.deficit,
             loadMultiplier = zone.loadMultiplier,
             recoveryMultiplier = zone.recoveryMultiplier,
+            blackout = zone.blackout,
         }
     end
 

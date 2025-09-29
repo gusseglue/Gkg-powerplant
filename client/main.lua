@@ -6,9 +6,88 @@ local laptopEntity = nil
 local generatorPoints = {}
 local laptopPoint = nil
 local uiOpen = false
+local blackoutZones = {}
+local blackoutActive = false
+local trafficOverride = false
+
+local function buildBlackoutZones()
+    blackoutZones = {}
+
+    for zoneName, zoneConfig in pairs(Config.Zones or {}) do
+        local blackout = zoneConfig.blackout
+        if blackout and blackout.center and blackout.radius then
+            blackoutZones[zoneName] = {
+                center = blackout.center,
+                radius = blackout.radius,
+                disableTraffic = blackout.disableTraffic ~= false,
+                active = false,
+            }
+        end
+    end
+end
+
+local function setTrafficLightsOverride(enabled)
+    if enabled and not trafficOverride then
+        SetTrafficLightsState(2)
+        trafficOverride = true
+    elseif not enabled and trafficOverride then
+        SetTrafficLightsState(0)
+        trafficOverride = false
+    end
+end
+
+local function applyBlackout(enabled, disableTraffic)
+    if blackoutActive == enabled then
+        setTrafficLightsOverride(enabled and disableTraffic)
+        return
+    end
+
+    blackoutActive = enabled
+    SetBlackout(enabled)
+    if enabled then
+        SetArtificialLightsState(false)
+        SetArtificialLightsStateAffectsVehicles(false)
+    else
+        SetArtificialLightsState(false)
+        SetArtificialLightsStateAffectsVehicles(true)
+    end
+    setTrafficLightsOverride(enabled and disableTraffic)
+end
+
+local function updateBlackoutEffect()
+    if Utils.tableLength(blackoutZones) == 0 then
+        return
+    end
+
+    local ped = cache.ped
+    if not ped or not DoesEntityExist(ped) then
+        return
+    end
+
+    local coords = GetEntityCoords(ped)
+    local shouldBlackout = false
+    local disableTraffic = false
+
+    for _, zone in pairs(blackoutZones) do
+        if zone.active then
+            local distance = #(coords - zone.center)
+            if distance <= zone.radius then
+                shouldBlackout = true
+                disableTraffic = zone.disableTraffic
+                break
+            end
+        end
+    end
+
+    applyBlackout(shouldBlackout, disableTraffic)
+end
 
 RegisterNetEvent('gkg-powerplant:updateState', function(state)
     networkState = state
+    for zoneName, zoneData in pairs(blackoutZones) do
+        zoneData.active = networkState and networkState.zones and networkState.zones[zoneName] and networkState.zones[zoneName].blackout or false
+    end
+    updateBlackoutEffect()
 end)
 
 local function ensureLaptopExists()
@@ -94,7 +173,8 @@ local function openLaptop()
 
     local zoneSummary = {}
     for _, zone in pairs(networkState.zones or {}) do
-        zoneSummary[#zoneSummary + 1] = formatZoneRow(zone)
+        local status = zone.blackout and 'OFFLINE' or 'ONLINE'
+        zoneSummary[#zoneSummary + 1] = ('%s | %s'):format(status, formatZoneRow(zone))
     end
 
     local generatorOptions = {}
@@ -203,6 +283,8 @@ RegisterNetEvent('ox_lib:cacheLoaded', function()
     ensureLaptopExists()
     createLaptopPoint()
     createGeneratorPoints()
+    buildBlackoutZones()
+    updateBlackoutEffect()
 end)
 
 AddEventHandler('onResourceStart', function(resource)
@@ -210,6 +292,8 @@ AddEventHandler('onResourceStart', function(resource)
     ensureLaptopExists()
     createLaptopPoint()
     createGeneratorPoints()
+    buildBlackoutZones()
+    updateBlackoutEffect()
 end)
 
 AddEventHandler('onResourceStop', function(resource)
@@ -223,6 +307,7 @@ AddEventHandler('onResourceStop', function(resource)
     if laptopPoint then
         laptopPoint:remove()
     end
+    applyBlackout(false, false)
 end)
 
 RegisterNetEvent('gkg-powerplant:playRepairAnimation', function()
@@ -237,4 +322,17 @@ end)
 
 CreateThread(function()
     networkState = lib.callback.await('gkg-powerplant:getNetworkState', false)
+    if networkState then
+        for zoneName, zoneData in pairs(blackoutZones) do
+            zoneData.active = networkState.zones and networkState.zones[zoneName] and networkState.zones[zoneName].blackout or false
+        end
+        updateBlackoutEffect()
+    end
+end)
+
+CreateThread(function()
+    while true do
+        updateBlackoutEffect()
+        Wait(1000)
+    end
 end)

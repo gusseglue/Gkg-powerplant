@@ -7,6 +7,7 @@ A fully dynamic power management system for Qbox that simulates generators, zone
 - **Generator simulation** – Fuel consumption, random outages, configurable capacity contributions and repair actions with cinematic animation triggers.
 - **Player driven demand** – City load automatically scales with the number of connected players.
 - **Central command laptop** – Spawn a laptop anywhere in the world to visualise live generator, zone and city stats using ox_lib context menus.
+- **Automatic brownouts** – Zones fall into blackout when demand exceeds supply, cutting local lighting and signalling until power is restored.
 - **Repair gameplay loop** – Restrict repairs to whitelisted jobs, reward successful fixes with cash payouts and optional notifications.
 - **Configuration first** – All behaviour is controlled from `shared/config.lua`, making the resource drop-in friendly without editing the core logic.
 
@@ -35,6 +36,7 @@ Each zone can define:
 - `capacity` – Maximum load that can be serviced locally.
 - `loadMultiplier` – Weight of how much global player load is assigned to this zone.
 - `recoveryMultiplier` – Multiplier applied to generator recovery inside the zone.
+- `blackout` – Optional table with `center`, `radius` (and `disableTraffic`) used client-side to determine where lights and traffic signals shut off during outages.
 
 ### Generators
 Each generator entry contains:

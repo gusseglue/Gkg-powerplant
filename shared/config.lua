@@ -30,11 +30,20 @@ Config.Zones = {
         capacity = 500,
         loadMultiplier = 1.0,
         recoveryMultiplier = 1.0,
+        blackout = {
+            center = vec3(215.0, -917.0, 30.0),
+            radius = 450.0,
+        },
     },
     Airport = {
         capacity = 300,
         loadMultiplier = 0.8,
         recoveryMultiplier = 0.9,
+        blackout = {
+            center = vec3(-1037.0, -2733.0, 20.0),
+            radius = 350.0,
+            disableTraffic = false,
+        },
     }
 }
 
