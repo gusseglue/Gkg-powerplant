@@ -20,6 +20,7 @@ Config.RepairAnimation = {
     anim = 'base',
     duration = 10000
 }
+Config.EnableTabletApp = true
 Config.LaptopModel = `prop_laptop_01a`
 Config.LaptopInteractionDistance = 2.0
 Config.LaptopEntityCoords = vec3(-50.4, -1102.2, 26.4)

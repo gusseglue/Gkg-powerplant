@@ -14,6 +14,7 @@ A fully dynamic power management system for Qbox that simulates generators, zone
 ## Requirements
 - [Qbox](https://github.com/Qbox-project/qbox)
 - [ox_lib](https://github.com/overextended/ox_lib)
+- [lb-tablet](https://github.com/lbphone/lb-tablet-app-templates/) *(optional, for the tablet dashboard)*
 
 ## Installation
 1. Place the repository inside your server resources directory (e.g. `resources/[qbox]/gkg-powerplant`).
@@ -30,6 +31,7 @@ All tunable values live in [`shared/config.lua`](shared/config.lua). The default
 - `FuelUsage` / `FuelTickMinutes` – Fuel consumed every tick and the tick interval.
 - `RandomDisable`, `DisableInterval`, `DisableVariance` – Control random generator outages.
 - `RepairRewardJobs`, `RepairRewardCash`, `RepairCooldown` – Jobs authorised to repair, cash payout and cooldown between repairs.
+- `EnableTabletApp` – Toggle automatic LB Tablet dashboard registration.
 
 ### Zones
 Each zone can define:
@@ -51,7 +53,7 @@ Each generator entry contains:
 The laptop entity spawned on resource start uses `LaptopEntityCoords`, `LaptopHeading` and `LaptopModel`. Adjust to reposition the interaction point.
 
 ### LB Tablet integration
-An optional LB Tablet app is bundled in [`gkg-powerplant-tablet`](gkg-powerplant-tablet). Ensure both `lb-tablet` and `ox_lib` are running, then add `ensure gkg-powerplant-tablet` after the main resource in your `server.cfg`. The app installs automatically for every player, showing live city, zone and generator data while exposing control buttons only when the player's job is in `Config.RepairRewardJobs`.
+Set `EnableTabletApp` to `true` (default) to automatically register the bundled LB Tablet dashboard once the `lb-tablet` resource is running. The app installs for every player, showing live city, zone and generator data while exposing control buttons only when the player's job is in `Config.RepairRewardJobs`. If your server does not run LB Tablet, simply set `EnableTabletApp = false` to skip the registration entirely.
 
 ## Gameplay loop
 1. **Demand generation** – Player count drives base load, distributed to zones by their multipliers.

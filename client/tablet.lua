@@ -1,5 +1,10 @@
+local Config = lib.require('shared.config')
+
+if Config.EnableTabletApp == false then
+    return
+end
+
 local appIdentifier = 'gkg-powerplant-tablet'
-local resourceName = GetCurrentResourceName()
 local appRegistered = false
 local appOpen = false
 local canControl = false
@@ -57,7 +62,7 @@ local function addApp()
         name = 'Power Grid',
         description = 'Monitor generator output and zone status in real time.',
         icon = iconDataUrl,
-        ui = 'ui/index.html',
+        ui = 'ui/tablet/index.html',
         removable = true,
         defaultApp = false,
         onInstall = function() end,
@@ -76,12 +81,12 @@ local function addApp()
     })
 
     if not success then
-        print(('[gkg-powerplant-tablet] Failed to register app: %s'):format(reason or 'unknown'))
+        print(('[gkg-powerplant] Failed to register tablet app: %s'):format(reason or 'unknown'))
         return
     end
 
     appRegistered = true
-    print('[gkg-powerplant-tablet] Tablet app registered')
+    print('[gkg-powerplant] Tablet app registered')
 end
 
 RegisterNUICallback('refreshState', function(_, cb)
@@ -124,16 +129,36 @@ RegisterNetEvent('gkg-powerplant:updateState', function(state)
     end
 end)
 
-CreateThread(function()
-    while GetResourceState('lb-tablet') ~= 'started' do
-        Wait(500)
+local function ensureTabletReady()
+    local state = GetResourceState('lb-tablet')
+
+    if state == 'started' then
+        addApp()
+        return true
     end
 
-    addApp()
+    if state == 'missing' or state == 'unknown' then
+        print('[gkg-powerplant] lb-tablet not found, skipping tablet app registration')
+        return true
+    end
+
+    return false
+end
+
+CreateThread(function()
+    local attempts = 0
+    while not ensureTabletReady() do
+        Wait(1000)
+        attempts = attempts + 1
+        if attempts >= 120 then
+            print('[gkg-powerplant] lb-tablet did not start within 120 seconds, skipping tablet app registration')
+            break
+        end
+    end
 end)
 
 AddEventHandler('onResourceStart', function(resource)
     if resource == 'lb-tablet' then
-        addApp()
+        ensureTabletReady()
     end
 end)
