@@ -1,0 +1,35 @@
+:root {
+    --background-primary: hsl(0, 0%, 98%);
+    --background-secondary: hsl(0, 0%, 92%);
+    --background-tertiary: hsl(0, 0%, 88%);
+
+    --text-primary: hsl(0, 0%, 6%);
+    --text-secondary: hsl(0, 0%, 38%);
+
+    --accent-primary: hsl(201, 100%, 40%);
+    --danger-primary: hsl(3, 84%, 52%);
+    --danger-surface: hsla(3, 84%, 52%, 0.12);
+    --success-primary: hsl(152, 64%, 32%);
+    --success-surface: hsla(152, 64%, 32%, 0.12);
+
+    --scrollbar: hsl(0, 0%, 78%);
+    --scrollbar-hover: hsl(0, 0%, 65%);
+}
+
+[data-theme='dark'] {
+    --background-primary: hsl(0, 0%, 4%);
+    --background-secondary: hsl(0, 0%, 14%);
+    --background-tertiary: hsl(0, 0%, 20%);
+
+    --text-primary: hsl(0, 0%, 96%);
+    --text-secondary: hsl(0, 0%, 66%);
+
+    --accent-primary: hsl(201, 100%, 65%);
+    --danger-primary: hsl(2, 81%, 66%);
+    --danger-surface: hsla(2, 81%, 66%, 0.16);
+    --success-primary: hsl(150, 63%, 55%);
+    --success-surface: hsla(150, 63%, 55%, 0.16);
+
+    --scrollbar: hsl(0, 0%, 28%);
+    --scrollbar-hover: hsl(0, 0%, 38%);
+}

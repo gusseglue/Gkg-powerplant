@@ -50,6 +50,9 @@ Each generator entry contains:
 ### Laptop placement
 The laptop entity spawned on resource start uses `LaptopEntityCoords`, `LaptopHeading` and `LaptopModel`. Adjust to reposition the interaction point.
 
+### LB Tablet integration
+An optional LB Tablet app is bundled in [`gkg-powerplant-tablet`](gkg-powerplant-tablet). Ensure both `lb-tablet` and `ox_lib` are running, then add `ensure gkg-powerplant-tablet` after the main resource in your `server.cfg`. The app installs automatically for every player, showing live city, zone and generator data while exposing control buttons only when the player's job is in `Config.RepairRewardJobs`.
+
 ## Gameplay loop
 1. **Demand generation** – Player count drives base load, distributed to zones by their multipliers.
 2. **Generator upkeep** – Fuel is automatically drained every tick. When empty or randomly disabled, the generator goes offline.
@@ -59,6 +62,7 @@ The laptop entity spawned on resource start uses `LaptopEntityCoords`, `LaptopHe
 ## Extending the system
 - Persist generator state by adding your own database writes inside the server logic (`server/main.lua`).
 - Hook into the `broadcastState` function to integrate alerts with dispatch or logging systems.
+- Use the `gkg-powerplant:getNetworkState` callback to retrieve both the cached grid snapshot (`state`) and a `canControl` flag for the requesting player.
 - Expand the client UI by replacing the ox_lib context menus with custom NUI if desired.
 
 ## License

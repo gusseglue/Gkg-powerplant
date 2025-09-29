@@ -299,11 +299,24 @@ RegisterNetEvent('gkg-powerplant:repairGenerator', function(generatorId)
     })
 end)
 
-lib.callback.register('gkg-powerplant:getNetworkState', function()
+local function playerCanControl(source)
+    local job = getPlayerJob(source)
+    if job and Config.RepairRewardJobs[job] then
+        return true
+    end
+
+    return false
+end
+
+lib.callback.register('gkg-powerplant:getNetworkState', function(source)
     if not CachedState then
         buildNetworkSnapshot()
     end
-    return CachedState
+
+    return {
+        state = CachedState,
+        canControl = playerCanControl(source),
+    }
 end)
 
 AddEventHandler('playerDropped', function()
